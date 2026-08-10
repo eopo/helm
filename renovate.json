@@ -1,0 +1,161 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Renovate configuration for Paperless-NGX Helm Chart",
+  "extends": [
+    "config:best-practices",
+    "schedule:weekly",
+    "docker:enableMajor"
+  ],
+  "schedule": [
+    "before 6am on Monday"
+  ],
+  "timezone": "UTC",
+  "semanticCommits": "enabled",
+  "commitMessagePrefix": "chore(deps):",
+  "prConcurrentLimit": 3,
+  "prCreation": "auto",
+  "assignees": [
+    "@MVProwess"
+  ],
+  "reviewers": [
+    "@MVProwess"
+  ],
+  "labels": [
+    "type: dependency",
+    "area: helm-chart"
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": [
+      "type: security",
+      "priority: critical"
+    ],
+    "assignees": [
+      "@MVProwess"
+    ]
+  },
+  "helmCharts": {
+    "enabled": true,
+    "fileMatch": [
+      "charts/paperless-ngx/Chart\\.yaml$"
+    ]
+  },
+  "helm": {
+    "enabled": true
+  },
+  "docker": {
+    "enabled": true,
+    "fileMatch": [
+      "charts/paperless-ngx/values\\.yaml$"
+    ]
+  },
+  "packageRules": [
+    {
+      "description": "Auto-merge patch updates for chart dependencies",
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "matchDatasources": [
+        "helm"
+      ],
+      "automerge": true,
+      "labels": [
+        "type: patch"
+      ]
+    },
+    {
+      "description": "Group Bitnami database charts together",
+      "matchPackageNames": [
+        "postgresql",
+        "redis"
+      ],
+      "groupName": "bitnami-databases",
+      "schedule": [
+        "before 6am on Monday"
+      ]
+    },
+    {
+      "description": "Separate reviews for minor version bumps",
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "matchDatasources": [
+        "helm"
+      ],
+      "automerge": false,
+      "labels": [
+        "requires-review: minor"
+      ]
+    },
+    {
+      "description": "Disable auto-merge for major version updates",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "matchDatasources": [
+        "helm"
+      ],
+      "enabled": false,
+      "labels": [
+        "requires-review: breaking-change"
+      ]
+    },
+    {
+      "description": "Container image security updates (fast-track)",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "schedule": [
+        "at any time"
+      ],
+      "automerge": true,
+      "labels": [
+        "type: security"
+      ]
+    },
+    {
+      "description": "Paperless-NGX container image updates",
+      "matchPackageNames": [
+        "paperless-ngx/paperless-ngx"
+      ],
+      "matchDatasources": [
+        "docker"
+      ],
+      "labels": [
+        "area: container-images"
+      ]
+    },
+    {
+      "description": "GitHub Actions updates",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "schedule": [
+        "before 6am on Monday"
+      ],
+      "labels": [
+        "type: ci",
+        "area: github-actions"
+      ]
+    }
+  ],
+  "postUpdateOptions": [
+    "helmUpdateSubChartDependencies"
+  ],
+  "ignoreDeps": [],
+  "ignorePaths": [
+    ".git/**",
+    "node_modules/**",
+    ".venv/**"
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "before 6am on Monday"
+    ]
+  }
+}
+

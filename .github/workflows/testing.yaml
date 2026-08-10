@@ -116,6 +116,22 @@ jobs:
       - name: Set up Chart-Testing
         uses: helm/chart-testing-action@6ec842c01de15ebb84c8627d2744a0c2f2755c9f # v2.8.0
 
+      - name: Add Helm chart dependency repos
+        if: ${{ needs.changes.outputs.changed == 'true' || github.event.inputs.forceTest }}
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami --quiet
+          helm repo add tika https://apache.jfrog.io/artifactory/tika --quiet
+          helm repo add adnoctem oci://ghcr.io/adnoctem/helm --quiet
+          helm repo update --quiet
+
+      - name: Update chart dependencies
+        if: ${{ needs.changes.outputs.changed == 'true' || github.event.inputs.forceTest }}
+        run: |
+          for chart in $(ct list-changed --config config/ct-config.yaml); do
+            echo "📦 Updating dependencies for: $chart"
+            helm dependency update "$chart"
+          done
+
       - name: Run chart-testing (lint)
         if: ${{ needs.changes.outputs.changed == 'true' || github.event.inputs.forceTest }}
         run: ct lint --config config/ct-config.yaml

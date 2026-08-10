@@ -36,8 +36,15 @@ jobs:
 
       - name: Add Helm chart dependency repos
         run: |
-          helm repo add bitnami https://charts.bitnami.com/bitnami
-          helm repo add tika https://apache.jfrog.io/artifactory/tika
+          helm repo add bitnami https://charts.bitnami.com/bitnami --quiet
+          helm repo add tika https://apache.jfrog.io/artifactory/tika --quiet
+          helm repo add adnoctem oci://ghcr.io/adnoctem/helm --quiet
+          helm repo update --quiet
+
+      - name: Update chart dependencies
+        run: |
+          echo "📦 Ensuring chart dependencies are up to date..."
+          helm dependency update charts/paperless-ngx
 
       - name: Prepare GPG signing key
         run: |
