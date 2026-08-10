@@ -5,73 +5,58 @@ accepted.
 
 ## ⚒️ Building
 
-The project uses the `Make` build tool with targets defined in the projects top-level [`Makefile`](../Makefile). The
-file includes a debug mode that will print usage information for each `make` target when the variable `PRINT_HELP=y` is
-defined. It will not execute any commands, but solely print the information so no actions will be taken on your machine.
+The project uses the `Make` build tool with targets defined in the projects top-level [`Makefile`](../Makefile).
 
-Before running _any_ other target you should run the `tools-check` target which will look for all executables required
-to operate the project locally. If any of the required executables are not found the `make` will let you know.
-
-After you have all the necessary tools installed you will want to generate a TLS certificate authority to issue local
-TLS certificates for your applications' Ingress manifests. To this you can run:
+Before running any other target you should run the `tools-check` target which verifies that all required executables are installed:
 
 ```shell
-make secrets
+make tools-check
 ```
 
-This will create a new `secrets` directory in the project root and fill the directory with a `Kustomization.yaml`, a
-TLS certificate as well as a private key, and a CSR (we won't need this). You will need to set up your browser to trust
-this CA certificate to avoid TLS issues. For Google Chrome this can be done by navigating to the settings, then
-under `Privacy and security > Security > Manage certificates > Authorities` click `Import` and select the generated
-certificate.
+### Core Development Tasks
 
-These files will also be reused when setting up the development environment. Said environment is facilitated
-through `kind` and can be created with:
+When developing the chart, the [`Makefile`](../Makefile) provides these handy targets:
+
+- **Template**: Render the Helm chart to see the generated Kubernetes manifests
+  ```shell
+  make template VALUES=ci/test-values.yaml
+  ```
+
+- **Lint**: Validate the chart structure and syntax
+  ```shell
+  make lint
+  ```
+
+- **Generate**: Update `values.schema.json` and `README.md` from chart definitions
+  ```shell
+  make gen
+  ```
+
+- **Dry-Install**: Test installation without applying changes
+  ```shell
+  make dry-install VALUES=ci/test-values.yaml
+  ```
+
+- **Build**: Package the chart as a `.tgz` artifact
+  ```shell
+  make build
+  ```
+
+### Local Kubernetes Testing (Optional)
+
+For local testing with a Kubernetes cluster, you can create a temporary development environment:
 
 ```shell
 make env
 ```
 
-This will set up a new local `kind`, already pre-configured to
-be [ingress-ready](https://kind.sigs.k8s.io/docs/user/ingress/#ingress-nginx) and
-install [Jetstack's Cert-Manager](https://artifacthub.io/packages/helm/cert-manager/cert-manager) as well as
-the [Kubernetes Project's Ingress-Nginx Controller](https://artifacthub.io/packages/helm/ingress-nginx/ingress-nginx).
-As mentioned `cert-manager` is already set up to make use of our previously generated CA. Most charts' `ci/test-values`
-already include the
-necessary `Ingress` [annotations to auto-generate TLS certificates](https://cert-manager.io/docs/usage/certificate/)
-with `cert-manager`. Lastly this will also insert the hostnames defined in [`scripts/hosts.sh`](../scripts/hosts.sh) in
-your `/etc/hosts/` to be-able to resolve the hostnames in your browser. If your current user has root-privileges then
-the script will just insert the hostnames, otherwise you will be prompt for the `sudo` password.
-
-When developing new charts the [`Makefile`](../Makefile) provides a couple of handy targets to `template`, `install`
-or `dry-install` any chart. To run them you might execute something like this:
-
-```shell
-make template CHART=charts/paperless-ngx VALUES=ci/test-values.yaml RELEASE_NAME=paperless-override
-```
-
-Take a look at each target's output with `PRINT_HELP=y` set for more in-depth information.
-
-Updates to the `values.schema.json` and the `README.md` can be performed with the `make gen` target:
-
-```shell
-make gen CHART=charts/paperless-ngx
-```
-
-If you have made a general change like a stylistic one for the chart `README` or any change which might affect multiple
-charts at a time you might want to regenerate the `values.schema.json` and `README.md` files and re-build all charts.
-This can be achieved with the `all` target:
-
-```shell
-make all
-```
-
-When you're done and want to delete the cluster as well as the hostnames inserted in your `/etc/hosts` you might
-run the `prune` target which will revert these changes for you.
+This creates a local `kind` cluster with pre-configured ingress and cert-manager. To clean up:
 
 ```shell
 make prune
 ```
+
+Run `make help` for a full list of available targets.
 
 ## ℹ️ Commit Message Format
 
@@ -130,11 +115,9 @@ Must be one of the following:
 
 The following is the list of supported scopes:
 
-- `charts` - Changes affecting a multitude of charts at once
-- `charts/*` - Changes affecting single charts
+- `paperless-ngx` - Changes to the Paperless-NGX chart
 - `k8s` - Changes to Kubernetes manifests (development setup)
 - `make` - Changes affecting the Make-based build tool
-- `scripts` - Changes to scripts
 - `config` - Changes to configuration files
 
 #### Summary
@@ -201,19 +184,18 @@ The content of the commit message body should contain:
 2. Add your GitHub username to the [`AUTHORS`](../.github/AUTHORS) and [`CODEOWNERS`](../.github/CODEOWNERS) files
 3. Submit a pull request
 
-_**NOTE**_: In order to make testing and merging of PRs easier, please submit changes to multiple charts in separate
-PRs.
+_**NOTE**_: Please submit any changes in a single PR.
 
 ### Technical Requirements
 
 - Must follow [Charts best practices](https://helm.sh/docs/topics/chart_best_practices/)
 - Must pass CI jobs for linting and installing changed charts with
+- Must pass CI jobs for linting and installing the chart with
   the [chart-testing](https://github.com/helm/chart-testing) tool
-- Any change to a chart requires a version bump following [SemVer](https://semver.org/) principles.
+- Any change to the chart requires a version bump following [SemVer](https://semver.org/).
   See [Immutability](#immutability) and [Versioning](#versioning) below
 
-Once changes have been merged, the release job will automatically run to package and release changed charts.
-
+Once changes have been merged, the release job will automatically run to package and release the chart.
 ### Immutability
 
 Chart releases must be immutable. Any change to a chart warrants a chart version bump even if it is only changed to the
