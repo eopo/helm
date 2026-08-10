@@ -1,7 +1,7 @@
 # Paperless-NGX Helm Chart <img src="https://raw.githubusercontent.com/paperless-ngx/paperless-ngx/5842944d1ef817c11a47ed5c19ba8b7886c9fbfe/resources/logo/web/svg/square.svg" alt="Paperless-NGX Logo" align="right" width="100"/>
 
 [![License](https://img.shields.io/github/license/adnoctem/helm?label=License)](https://opensource.org/licenses/GPL-3.0)
-[![CI Status](https://github.com/adnoctem/helm/actions/workflows/release.yaml/badge.svg)](https://github.com/adnoctem/helm/blob/main/.github/workflows/release.yaml)
+[![CI Status](https://github.com/adnoctem/helm/actions/workflows/cicd-ci.yml/badge.svg)](https://github.com/adnoctem/helm/blob/main/.github/workflows/cicd-ci.yml)
 
 A [GPL-3.0 licensed][license] [_Helm Chart_][helm] for [Paperless-NGX][paperless-ngx] maintained by `Ad Noctem Collective` 
 for use with [Kubernetes][kubernetes] `v1.26` and above.

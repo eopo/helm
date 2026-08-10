@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    "charts/paperless-ngx": {
+      "release-type": "helm",
+      "package-name": "paperless-ngx",
+      "changelog-path": "CHANGELOG.md",
+      "skip-github-release": true
+    }
+  }
+}

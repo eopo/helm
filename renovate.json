@@ -1,160 +1,147 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Renovate configuration for Paperless-NGX Helm Chart",
+  "description": "Professional dependency and release version automation for Helm chart maintenance",
   "extends": [
-    "config:best-practices",
-    "schedule:weekly",
-    "docker:enableMajor"
-  ],
-  "schedule": [
-    "before 6am on Monday"
+    "config:recommended"
   ],
   "timezone": "UTC",
+  "schedule": [
+    "before 5am every weekday"
+  ],
   "semanticCommits": "enabled",
-  "commitMessagePrefix": "chore(deps):",
-  "prConcurrentLimit": 3,
-  "prCreation": "auto",
-  "assignees": [
-    "@MVProwess"
-  ],
-  "reviewers": [
-    "@MVProwess"
-  ],
+  "semanticCommitType": "deps",
+  "semanticCommitScope": "helm",
+  "prConcurrentLimit": 10,
+  "prHourlyLimit": 0,
+  "prCreation": "status-success",
+  "dependencyDashboard": true,
+  "separateMajorMinor": true,
+  "rangeStrategy": "bump",
   "labels": [
-    "type: dependency",
-    "area: helm-chart"
-  ],
-  "vulnerabilityAlerts": {
-    "enabled": true,
-    "labels": [
-      "type: security",
-      "priority: critical"
-    ],
-    "assignees": [
-      "@MVProwess"
-    ]
-  },
-  "helmCharts": {
-    "enabled": true,
-    "fileMatch": [
-      "charts/paperless-ngx/Chart\\.yaml$"
-    ]
-  },
-  "helm": {
-    "enabled": true
-  },
-  "docker": {
-    "enabled": true,
-    "fileMatch": [
-      "charts/paperless-ngx/values\\.yaml$"
-    ]
-  },
-  "packageRules": [
-    {
-      "description": "Auto-merge patch updates for chart dependencies",
-      "matchUpdateTypes": [
-        "patch"
-      ],
-      "matchDatasources": [
-        "helm"
-      ],
-      "automerge": true,
-      "labels": [
-        "type: patch"
-      ]
-    },
-    {
-      "description": "Group Bitnami database charts together",
-      "matchPackageNames": [
-        "postgresql",
-        "redis"
-      ],
-      "groupName": "bitnami-databases",
-      "schedule": [
-        "before 6am on Monday"
-      ]
-    },
-    {
-      "description": "Separate reviews for minor version bumps",
-      "matchUpdateTypes": [
-        "minor"
-      ],
-      "matchDatasources": [
-        "helm"
-      ],
-      "automerge": false,
-      "labels": [
-        "requires-review: minor"
-      ]
-    },
-    {
-      "description": "Disable auto-merge for major version updates",
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "matchDatasources": [
-        "helm"
-      ],
-      "enabled": false,
-      "labels": [
-        "requires-review: breaking-change"
-      ]
-    },
-    {
-      "description": "Container image security updates (fast-track)",
-      "matchDatasources": [
-        "docker"
-      ],
-      "matchUpdateTypes": [
-        "patch"
-      ],
-      "schedule": [
-        "at any time"
-      ],
-      "automerge": true,
-      "labels": [
-        "type: security"
-      ]
-    },
-    {
-      "description": "Paperless-NGX container image updates",
-      "matchPackageNames": [
-        "paperless-ngx/paperless-ngx"
-      ],
-      "matchDatasources": [
-        "docker"
-      ],
-      "labels": [
-        "area: container-images"
-      ]
-    },
-    {
-      "description": "GitHub Actions updates",
-      "matchManagers": [
-        "github-actions"
-      ],
-      "schedule": [
-        "before 6am on Monday"
-      ],
-      "labels": [
-        "type: ci",
-        "area: github-actions"
-      ]
-    }
-  ],
-  "postUpdateOptions": [
-    "helmUpdateSubChartDependencies"
-  ],
-  "ignoreDeps": [],
-  "ignorePaths": [
-    ".git/**",
-    "node_modules/**",
-    ".venv/**"
+    "dependencies",
+    "helm"
   ],
   "lockFileMaintenance": {
     "enabled": true,
     "schedule": [
-      "before 6am on Monday"
+      "before 5am on monday"
+    ]
+  },
+  "helmv3": {
+    "managerFilePatterns": [
+      "/charts\\/paperless-ngx\\/Chart\\.yaml$/"
+    ]
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/charts\\/paperless-ngx\\/values\\.yaml$/"
+      ],
+      "matchStrings": [
+        "repository:\\s*paperless-ngx/paperless-ngx\\s*[\\r\\n]+\\s*tag:\\s*\\\"?(?<currentValue>[^\\\"\\s]+)\\\"?"
+      ],
+      "depNameTemplate": "ghcr.io/paperless-ngx/paperless-ngx",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/charts\\/paperless-ngx\\/Chart\\.yaml$/"
+      ],
+      "matchStrings": [
+        "appVersion:\\s*\\\"?(?<currentValue>[0-9A-Za-z.+-]+)\\\"?"
+      ],
+      "depNameTemplate": "ghcr.io/paperless-ngx/paperless-ngx",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/charts\\/paperless-ngx\\/Chart\\.yaml$/"
+      ],
+      "matchStrings": [
+        "image:\\s*ghcr\\.io/paperless-ngx/paperless-ngx:(?<currentValue>[^\\s]+)"
+      ],
+      "depNameTemplate": "ghcr.io/paperless-ngx/paperless-ngx",
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "docker"
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Automerge non-breaking updates after CI succeeds",
+      "matchManagers": [
+        "helmv3",
+        "custom.regex",
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "assignAutomerge": true,
+      "labels": [
+        "automerge",
+        "non-breaking"
+      ]
+    },
+    {
+      "description": "Major updates require manual intervention in PR",
+      "matchManagers": [
+        "helmv3",
+        "custom.regex",
+        "github-actions"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false,
+      "labels": [
+        "manual-intervention-required",
+        "breaking-change-candidate"
+      ]
+    },
+    {
+      "description": "Bundle core stateful dependencies together",
+      "matchManagers": [
+        "helmv3"
+      ],
+      "matchPackageNames": [
+        "postgresql",
+        "redis"
+      ],
+      "groupName": "database-subcharts"
+    },
+    {
+      "description": "Keep Paperless image related fields updated together",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "ghcr.io/paperless-ngx/paperless-ngx"
+      ],
+      "groupName": "paperless-upstream-image",
+      "groupSlug": "paperless-upstream-image",
+      "matchManagers": [
+        "custom.regex"
+      ]
+    }
+  ],
+  "postUpdateOptions": [
+    "helmUpdateSubChartArchives"
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": [
+      "security"
     ]
   }
 }

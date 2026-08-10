@@ -1,0 +1,27 @@
+name: PR Title Policy
+
+on:
+  pull_request:
+    paths:
+      - charts/paperless-ngx/**
+
+permissions:
+  pull-requests: read
+
+jobs:
+  semantic-pr-title:
+    if: github.actor != 'google-github-actions[bot]' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate semantic PR title
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            deps
+            revert
+          requireScope: false
